@@ -364,10 +364,11 @@ def run(options):
 	
 	for data, labels, _ in batch_iterator(train_data, options.batch_size, forever=True):
 		if use_gpu:
-			data = data.cuda()
-			labels = labels.cuda()
-		outp = model(Variable(data))
-		loss = nn.NLLLoss()(F.log_softmax(outp), Variable(labels))
+			outp = model(Variable(data.cuda()))
+			loss = nn.NLLLoss()(F.log_softmax(outp), Variable(labels.cuda()))
+		else:
+			outp = model(Variable(data))
+			loss = nn.NLLLoss()(F.log_softmax(outp), Variable(labels))
 		acc = (outp.data.max(1)[1] == labels).sum() / data.shape[0]
 
 		opt.zero_grad()
