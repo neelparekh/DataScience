@@ -203,7 +203,7 @@ def load_embeddings(path, vocab, cache=False, cache_path=None):
 
 def prepare_data(data):
 	# pad data
-	maxlen = max(map(len, data))
+	maxlen = max(5, max(map(len, data)))
 	data = [ex + [0] * (maxlen-len(ex)) for ex in data]
 
 	# wrap in tensor
