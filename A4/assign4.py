@@ -348,7 +348,7 @@ def run(options):
 	train_data, validation_data, test_data, vocab, embeddings = \
 		load_data_and_embeddings(options.data, options.ids, options.embeddings)
 
-
+	use_gpu = torch.cuda.is_available()
 	model = CNNClassifier(embeddings.shape[0], embeddings.shape[1], 5)
 	model.init_weights(embeddings,is_static=True)
 	opt = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=3e-4)
@@ -363,6 +363,9 @@ def run(options):
 		sys.exit()
 	
 	for data, labels, _ in batch_iterator(train_data, options.batch_size, forever=True):
+		if use_gpu:
+			data = data.cuda()
+			labels = labels.cuda()
 		outp = model(Variable(data))
 		loss = nn.NLLLoss()(F.log_softmax(outp), Variable(labels))
 		acc = (outp.data.max(1)[1] == labels).sum() / data.shape[0]
@@ -384,6 +387,7 @@ def run(options):
 				checkpoint_model(step, val_err, model, opt, options.model)
 		
 		step += 1
+		if step == 10000: break
 
 
 if __name__ == '__main__':
